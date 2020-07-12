@@ -1,0 +1,166 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+
+titanic_df=pd.read_csv('D:/datascience/Titanic_Data.csv')
+
+	PassengerId	Survived	Pclass	Name	Sex	Age	SibSp	Parch	Ticket	Fare	Cabin	Embarked
+0	1	0	3	Braund, Mr. Owen Harris	male	22.0	1	0	A/5 21171	7.2500	NaN	S
+1	2	1	1	Cumings, Mrs. John Bradley (Florence Briggs Th...	female	38.0	1	0	PC 17599	71.2833	C85	C
+2	3	1	3	Heikkinen, Miss. Laina	female	26.0	0	0	STON/O2. 3101282	7.9250	NaN	S
+3	4	1	1	Futrelle, Mrs. Jacques Heath (Lily May Peel)	female	35.0	1	0	113803	53.1000	C123	S
+4	5	0	3	Allen, Mr. William Henry	male	35.0	0	0	373450	8.0500	NaN	S
+titanic_df.info()
+
+titanic_df.info()
+
+<class 'pandas.core.frame.DataFrame'>
+RangeIndex: 891 entries, 0 to 890
+Data columns (total 12 columns):
+PassengerId    891 non-null int64
+Survived       891 non-null int64
+Pclass         891 non-null int64
+Name           891 non-null object
+Sex            891 non-null object
+Age            714 non-null float64
+SibSp          891 non-null int64
+Parch          891 non-null int64
+Ticket         891 non-null object
+Fare           891 non-null float64
+Cabin          204 non-null object
+Embarked       889 non-null object
+dtypes: float64(2), int64(5), object(5)
+memory usage: 83.7+ KB
+titanic_df.isnull().sum()
+PassengerId      0
+Survived         0
+Pclass           0
+Name             0
+Sex              0
+Age            177
+SibSp            0
+Parch            0
+Ticket           0
+Fare             0
+Cabin          687
+Embarked         2
+dtype: int64
+
+
+
+
+plt.figure(figsize=(12,8))
+sns.heatmap(titanic_df.isnull(),yticklabels=False,cmap='viridis')
+
+
+
+<matplotlib.axes._subplots.AxesSubplot at 0x18c6c72ebc8>
+
+
+titanic_df.columns
+
+Index(['PassengerId', 'Survived', 'Pclass', 'Name', 'Sex', 'Age', 'SibSp',
+       'Parch', 'Ticket', 'Fare', 'Cabin', 'Embarked'],
+      dtype='object')
+
+sns.boxplot(titanic_df['Pclass'],titanic_df['Age'],palette='winter')
+plt.show()
+
+def impute(cols):
+    Age=cols[0]
+    Pclass=cols[1]
+    if pd.isnull(Age):
+        if Pclass==1:
+            return 37
+        elif Pclass==2:
+            return 29
+        else:
+            return 24
+    return Age
+titanic_df ['Age']= titanic_df[['Age','Pclass']].apply(impute, axis=1)
+    
+
+titanic_df.isnull().sum()
+
+PassengerId      0
+Survived         0
+Pclass           0
+Name             0
+Sex              0
+Age              0
+SibSp            0
+Parch            0
+Ticket           0
+Fare             0
+Cabin          687
+Embarked         2
+dtype: int64
+
+
+titanic_df.dropna(inplace=True)
+
+PassengerId      0
+Survived         0
+Pclass           0
+Name             0
+Sex              0
+Age              0
+SibSp            0
+Parch            0
+Ticket           0
+Fare             0
+Cabin          687
+Embarked         2
+dtype: int64
+
+
+
+titanic_df.dropna(inplace=True)
+titanic_df.dropna(inplace=True)
+
+sns.heatmap(titanic_df.corr(), annot=True)
+
+
+
+sns.heatmap(titanic_df.corr(), annot=True)
+
+gender=pd.get_dummies(titanic_df['Sex'])
+embarked=pd.get_dummies(titanic_df['Embarked'])
+
+titanic_df_new=pd.concat([titanic_df,gender,embarked], axis=1)
+titanic_df_new.head()
+
+	PassengerId	Survived	Pclass	Name	Sex	Age	SibSp	Parch	Ticket	Fare	Cabin	Embarked	female	male	C	Q	S
+1	2	1	1	Cumings, Mrs. John Bradley (Florence Briggs Th...	female	38.0	1	0	PC 17599	71.2833	C85	C	1	0	1	0	0
+3	4	1	1	Futrelle, Mrs. Jacques Heath (Lily May Peel)	female	35.0	1	0	113803	53.1000	C123	S	1	0	0	0	1
+6	7	0	1	McCarthy, Mr. Timothy J	male	54.0	0	0	17463	51.8625	E46	S	0	1	0	0	1
+10	11	1	3	Sandstrom, Miss. Marguerite Rut	female	4.0	1	1	PP 9549	16.7000	G6	S	1	0	0	0	1
+11	12	1	1	Bonnell, Miss. Elizabeth	female	58.0	0	0	113783	26.5500	C103	S	1	0	0	0	1
+
+
+titanic_df_new.drop(['PassengerId','Name','Sex','Ticket','Embarked'],axis=1, inplace=True)
+titanic_df_new.columns
+Index(['Survived', 'Pclass', 'Age', 'SibSp', 'Parch', 'Fare', 'Cabin',
+       'female', 'male', 'C', 'Q', 'S'],
+      dtype='object')
+X=titanic_df_new.drop(['Survived'], axis=1)
+Y=titanic_df_new['Survived']
+from sklearn.model_selection import train_test_split
+X_train,X_test,Y_train,Y_test=train_test_split(X,Y,test_size=0.2,random_state=2)
+from sklearn.linear_model import LogisticRegression
+logit_reg = LogisticRegression(C=1e4, max_iter=1e5,solver='liblinear')
+logit_reg.fit(X_train,Y_train)
+
+
+X_test.head()
+
+
+Pclass	Age	SibSp	Parch	Fare	Cabin	female	male	C	Q	S
+269	1	35.0	0	0	135.6333	C99	1	0	0	0	1
+671	1	31.0	1	0	52.0000	B71	0	1	0	0	1
+66	2	29.0	0	0	10.5000	F33	1	0	0	0	1
+452	1	30.0	0	0	27.7500	C111	0	1	1	0	0
+124	1	54.0	0	1	77.2875	D26	0	1	0	0	1
+
+
